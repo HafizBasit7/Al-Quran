@@ -194,6 +194,7 @@ export default function JuzDetailScreen({ route, navigation }) {
       </View>
     );
   }
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -210,11 +211,13 @@ export default function JuzDetailScreen({ route, navigation }) {
         {/* Juz Header */}
         <View style={styles.pageHeader}>
           <Text style={styles.juzNumber}>Juz {juzNumber}</Text>
-          <Text style={styles.juzNameArabic}>{juzName}</Text>
+          {/* <Text style={styles.juzNameArabic}>{juzName}</Text> */}
           <Text style={styles.juzInfo}>
             Page {currentPage + 1} of {totalPages}
           </Text>
         </View>
+
+        
 
         {/* Verses for current page */}
         {versePages[currentPage]?.map((ayah) => (
@@ -243,7 +246,7 @@ export default function JuzDetailScreen({ route, navigation }) {
               </TouchableOpacity> */}
             </View>
 
-            <Text style={[styles.arabicText, { fontSize: fontSize + 8, lineHeight: (fontSize + 8) * 2 }]}>
+            <Text selectable={true} style={[styles.arabicText, { fontSize: fontSize + 8, lineHeight: (fontSize + 8) * 2 }]}>
               {ayah.text}
             </Text>
             

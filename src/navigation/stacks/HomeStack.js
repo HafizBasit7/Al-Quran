@@ -35,7 +35,7 @@ export default function HomeStack() {
       <Stack.Screen 
         name="DuasScreen" 
         component={DuasScreen} 
-        options={{ title: 'Duas' }}
+        options={{ title: 'Duas', headerShown: false }}
       />
       <Stack.Screen 
         name="HadithScreen" 

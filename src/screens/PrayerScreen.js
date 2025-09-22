@@ -7,6 +7,7 @@ import PrayerCountdown from '../components/PrayerCountdown';
 import LocationSelector from '../components/LocationSelector';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BackButton from '../components/BackButton';
 
 export default function PrayerScreen() {
   const [selectedCity, setSelectedCity] = useState(null);
@@ -24,6 +25,7 @@ export default function PrayerScreen() {
       setSelectedCountry(null);
     }
   };
+
 
   const onRefresh = async () => {
     setRefreshing(true);

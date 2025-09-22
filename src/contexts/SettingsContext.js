@@ -13,7 +13,7 @@ export const useSettings = () => {
   return context;
 };
 
-// Available reciter options
+// Updated reciter options with all 21+ reciters
 const AVAILABLE_RECITERS = [
   {
     id: 'ar.alafasy',
@@ -21,20 +21,6 @@ const AVAILABLE_RECITERS = [
     arabicName: 'مشاري بن راشد العفاسي',
     hasAudio: true,
     country: 'Kuwait'
-  },
-  {
-    id: 'ar.abdulbasit',
-    name: 'Abdul Basit Abdul Samad',
-    arabicName: 'عبد الباسط عبد الصمد',
-    hasAudio: true,
-    country: 'Egypt'
-  },
-  {
-    id: 'ar.husary',
-    name: 'Mahmoud Khalil Al-Husary',
-    arabicName: 'محمود خليل الحصري',
-    hasAudio: true,
-    country: 'Egypt'
   },
   {
     id: 'ar.minshawi',
@@ -49,6 +35,132 @@ const AVAILABLE_RECITERS = [
     arabicName: 'عبد الرحمن السديس',
     hasAudio: true,
     country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.ajamy',
+    name: 'Ahmed Al-Ajamy',
+    arabicName: 'أحمد العجمي',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.ghamdi',
+    name: 'Saud Al-Shuraim & Abdullah Al-Ghamdi',
+    arabicName: 'سعود الشريم وعبد الله الغامدي',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.shuraim',
+    name: 'Saud Al-Shuraim',
+    arabicName: 'سعود الشريم',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.balilah',
+    name: 'Maher Al Muaiqly',
+    arabicName: 'ماهر المعيقلي',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.hudhaify',
+    name: 'Ali Al-Hudhaify',
+    arabicName: 'علي الحذيفي',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.shatri',
+    name: 'Adel Al-Kalbani (Al-Shatri)',
+    arabicName: 'عادل الكلباني',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.basfar',
+    name: 'Abdullah Basfar',
+    arabicName: 'عبد الله بصفر',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.bukhatir',
+    name: 'Abu Bakr Al-Bukhatir',
+    arabicName: 'أبو بكر الشاطري',
+    hasAudio: true,
+    country: 'UAE'
+  },
+  {
+    id: 'ar.johany',
+    name: 'Yasser Al-Dosari (Al-Johany)',
+    arabicName: 'ياسر الدوسري',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.hanyman',
+    name: 'Ibrahim Al-Akhdar (Al-Hanyman)',
+    arabicName: 'إبراهيم الأخضر',
+    hasAudio: true,
+    country: 'Saudi Arabia'
+  },
+  {
+    id: 'ar.khalil',
+    name: 'Mahmoud Khalil Al-Husary (Tajweed)',
+    arabicName: 'محمود خليل الحصري',
+    hasAudio: true,
+    country: 'Egypt'
+  },
+  {
+    id: 'ar.mutawalli',
+    name: 'Mohamed Al-Mutawalli',
+    arabicName: 'محمد المتولي',
+    hasAudio: true,
+    country: 'Egypt'
+  },
+  {
+    id: 'ar.nabulsi',
+    name: 'Mohamed Al-Nabulsi',
+    arabicName: 'محمد النابلسي',
+    hasAudio: true,
+    country: 'Syria'
+  },
+  {
+    id: 'ar.quran',
+    name: 'Mishary Rashid Alafasy (Quran Radio)',
+    arabicName: 'مشاري العفاسي (راديو القرآن)',
+    hasAudio: true,
+    country: 'Kuwait'
+  },
+  {
+    id: 'ar.rashed',
+    name: 'Rashed Al-Fares',
+    arabicName: 'راشد الفارس',
+    hasAudio: true,
+    country: 'Kuwait'
+  },
+  {
+    id: 'ar.tablawi',
+    name: 'Mohamed Al-Tablawi',
+    arabicName: 'محمد الطبلاوي',
+    hasAudio: true,
+    country: 'Egypt'
+  },
+  {
+    id: 'ar.warsh',
+    name: 'Warsh Recitation',
+    arabicName: 'رواية ورش',
+    hasAudio: true,
+    country: 'Various'
+  },
+  {
+    id: 'ar.hafs',
+    name: 'Hafs Recitation',
+    arabicName: 'رواية حفص',
+    hasAudio: true,
+    country: 'Various'
   }
 ];
 

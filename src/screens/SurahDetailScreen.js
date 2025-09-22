@@ -7,6 +7,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { quranApi } from '../services/quranApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BackButton from '../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 const VERSES_PER_PAGE = 15;
@@ -203,19 +204,7 @@ export default function SurahDetailScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* Bismillah for first page */}
-        {/* {currentPage === 0 && surah.number !== 1 && surah.number !== 9 && (
-          <View style={styles.bismillahContainer}>
-            <Text style={[styles.arabicText, { fontSize: fontSize + 12 }]}>
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </Text>
-            {showTranslation && (
-              <Text style={[styles.translationText, { fontSize }]}>
-                In the name of Allah, the Most Gracious, the Most Merciful
-              </Text>
-            )}
-          </View>
-        )} */}
+       
 
         {surah && versePages[currentPage]?.map((ayah) => (
           <View 

@@ -9,12 +9,11 @@ import {
   StatusBar,
   TouchableOpacity,
   Animated,
-  PermissionsAndroid,
-  Platform,
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import { Magnetometer } from 'expo-sensors';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
@@ -31,7 +30,9 @@ export default function QiblaScreen() {
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState(false);
   const [locationSubscription, setLocationSubscription] = useState(null);
+  const [magnetometerSubscription, setMagnetometerSubscription] = useState(null);
   const [distance, setDistance] = useState(0);
+  const [calibration, setCalibration] = useState(0);
   
   // Animation values
   const compassRotation = useRef(new Animated.Value(0)).current;
@@ -54,6 +55,9 @@ export default function QiblaScreen() {
     return () => {
       if (locationSubscription) {
         locationSubscription.remove();
+      }
+      if (magnetometerSubscription) {
+        magnetometerSubscription.remove();
       }
     };
   }, []);
@@ -143,19 +147,26 @@ export default function QiblaScreen() {
       const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 5000, // Update every 5 seconds
-          distanceInterval: 10, // Update every 10 meters
+          timeInterval: 5000,
+          distanceInterval: 10,
         },
         (newLocation) => {
           console.log('Location updated:', newLocation);
           setLocation(newLocation);
-          calculateQiblaDirection(newLocation.coords.latitude, newLocation.coords.longitude);
-          const newDistance = calculateDistance(newLocation.coords.latitude, newLocation.coords.longitude);
+          const newQiblaDirection = calculateQiblaDirection(
+            newLocation.coords.latitude, 
+            newLocation.coords.longitude
+          );
+          const newDistance = calculateDistance(
+            newLocation.coords.latitude, 
+            newLocation.coords.longitude
+          );
           setDistance(newDistance);
         }
       );
       
       setLocationSubscription(subscription);
+      startCompass();
       setLoading(false);
       
     } catch (error) {
@@ -178,6 +189,83 @@ export default function QiblaScreen() {
     }
   };
 
+  const startCompass = () => {
+    // Check if magnetometer is available
+    Magnetometer.isAvailableAsync().then(isAvailable => {
+      if (!isAvailable) {
+        Alert.alert(
+          'Compass Not Available',
+          'Your device does not have a magnetometer (compass). Qibla direction will be shown but you need to manually determine North.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // Set update interval
+      Magnetometer.setUpdateInterval(100);
+
+      // Subscribe to magnetometer updates
+      const subscription = Magnetometer.addListener((data) => {
+        calculateCompassHeading(data);
+      });
+
+      setMagnetometerSubscription(subscription);
+    });
+  };
+
+  const calculateCompassHeading = (magnetometerData) => {
+    try {
+      let { x, y, z } = magnetometerData;
+
+      // Basic calibration - you might want to implement more sophisticated calibration
+      if (Math.abs(x) < calibration) x = 0;
+      if (Math.abs(y) < calibration) y = 0;
+      if (Math.abs(z) < calibration) z = 0;
+
+      // Calculate heading in radians
+      let heading = Math.atan2(y, x);
+      
+      // Convert radians to degrees
+      heading = heading * (180 / Math.PI);
+      
+      // Adjust for device orientation (assuming portrait mode)
+      heading = (heading + 360) % 360;
+      
+      // Convert from magnetic north to true north (simple adjustment)
+      // Note: For precise true north, you'd need to use the device's geolocation and magnetic declination
+      const trueHeading = heading; // This is a simplified version
+      
+      setHeading(trueHeading);
+      
+      // Animate compass rotation
+      Animated.timing(compassRotation, {
+        toValue: -trueHeading,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+      
+    } catch (error) {
+      console.error('Compass calculation error:', error);
+    }
+  };
+
+  const calibrateCompass = () => {
+    Alert.alert(
+      'Calibrate Compass',
+      'To calibrate your compass:\n\n1. Hold your device flat\n2. Move it in a figure-8 motion\n3. Rotate it slowly in all directions\n4. Avoid magnetic interference\n\nThis will improve compass accuracy.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Start Calibration', 
+          onPress: () => {
+            setCalibration(5); // Adjust calibration threshold
+            setTimeout(() => setCalibration(2), 10000); // Reset after 10 seconds
+          } 
+        }
+      ]
+    );
+  };
+
   const calculateDistance = (userLat, userLng) => {
     const R = 6371; // Earth's radius in kilometers
     const dLat = (KAABA_LAT - userLat) * Math.PI / 180;
@@ -193,26 +281,20 @@ export default function QiblaScreen() {
   const calculateQiblaDirection = (userLat, userLng) => {
     try {
       // Convert degrees to radians
-      const dLng = (KAABA_LNG - userLng) * (Math.PI / 180);
-      const lat1 = userLat * (Math.PI / 180);
-      const lat2 = KAABA_LAT * (Math.PI / 180);
+      const phiK = KAABA_LAT * Math.PI / 180;
+      const lambdaK = KAABA_LNG * Math.PI / 180;
+      const phi = userLat * Math.PI / 180;
+      const lambda = userLng * Math.PI / 180;
       
-      // Calculate bearing using Haversine formula
-      const y = Math.sin(dLng) * Math.cos(lat2);
-      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+      // Calculate the bearing using the correct formula
+      const y = Math.sin(lambdaK - lambda);
+      const x = Math.cos(phi) * Math.tan(phiK) - Math.sin(phi) * Math.cos(lambdaK - lambda);
       
       let bearing = Math.atan2(y, x) * (180 / Math.PI);
       bearing = (bearing + 360) % 360; // Normalize to 0-360
       
       setQiblaDirection(bearing);
       
-      // Animate Qibla indicator
-      Animated.timing(qiblaRotation, {
-        toValue: bearing,
-        duration: 800,
-        useNativeDriver: true,
-      }).start();
-
       console.log('Qibla direction calculated:', bearing);
       return bearing;
       
@@ -222,31 +304,20 @@ export default function QiblaScreen() {
     }
   };
 
-  // Simulate compass heading changes for demo purposes
-  // In a real app, you would integrate with device compass
-  useEffect(() => {
-    if (!loading && location) {
-      const interval = setInterval(() => {
-        const newHeading = (heading + (Math.random() * 4 - 2)) % 360;
-        const normalizedHeading = newHeading < 0 ? newHeading + 360 : newHeading;
-        setHeading(normalizedHeading);
-        
-        Animated.timing(compassRotation, {
-          toValue: -normalizedHeading,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
-      }, 2000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [loading, location, heading]);
-
   const getQiblaAlignment = () => {
+    if (!heading && !qiblaDirection) {
+      return { 
+        status: 'Calibrating...', 
+        color: '#ffbb33', 
+        accuracy: 'Calibrating', 
+        icon: 'compass' 
+      };
+    }
+
     const diff = Math.abs(qiblaDirection - heading);
     const alignmentDiff = Math.min(diff, 360 - diff);
     
-    if (alignmentDiff < 10) {
+    if (alignmentDiff < 5) {
       return { 
         status: 'Perfect Alignment', 
         color: '#00C851', 
@@ -254,12 +325,20 @@ export default function QiblaScreen() {
         icon: 'checkmark-circle' 
       };
     }
-    if (alignmentDiff < 20) {
+    if (alignmentDiff < 15) {
       return { 
         status: 'Good Alignment', 
         color: '#ffbb33', 
         accuracy: 'Good', 
         icon: 'warning' 
+      };
+    }
+    if (alignmentDiff < 30) {
+      return { 
+        status: 'Fair Alignment', 
+        color: '#ff8800', 
+        accuracy: 'Fair', 
+        icon: 'alert-circle' 
       };
     }
     return { 
@@ -272,6 +351,9 @@ export default function QiblaScreen() {
 
   const alignment = getQiblaAlignment();
 
+  // Rest of your component remains the same until the return statement...
+  // Only changed the calibration button onPress handler
+
   if (loading) {
     return (
       <LinearGradient colors={['#1a472a', '#2d5a3d', '#4a7c59']} style={styles.container}>
@@ -283,7 +365,6 @@ export default function QiblaScreen() {
           <Text style={styles.loadingText}>Finding Your Location...</Text>
           <Text style={styles.loadingSubtext}>Please ensure GPS is enabled</Text>
           
-          {/* Loading indicators */}
           <View style={styles.loadingDots}>
             {[0, 1, 2].map((_, index) => (
               <Animated.View
@@ -331,169 +412,165 @@ export default function QiblaScreen() {
       <StatusBar barStyle="light-content" />
       
       <Animated.View style={[styles.content, { transform: [{ scale: scaleAnimation }] }]}>
-        {/* Header */}
         <ScrollView>
-        <View style={styles.header}>
-          <Ionicons name="compass" size={30} color="#fff" />
-          <Text style={styles.headerTitle}>Qibla Compass</Text>
-          <Text style={styles.headerSubtitle}>Direction to the Holy Kaaba</Text>
-        </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Ionicons name="compass" size={30} color="#fff" />
+            <Text style={styles.headerTitle}>Qibla Compass</Text>
+            <Text style={styles.headerSubtitle}>Direction to the Holy Kaaba</Text>
+          </View>
 
-        {/* Status Indicator */}
-        <Animated.View style={[styles.statusContainer, { backgroundColor: alignment.color }]}>
-          <Ionicons name={alignment.icon} size={20} color="#fff" />
-          <Text style={styles.statusText}>{alignment.status}</Text>
-        </Animated.View>
+          {/* Status Indicator */}
+          <Animated.View style={[styles.statusContainer, { backgroundColor: alignment.color }]}>
+            <Ionicons name={alignment.icon} size={20} color="#fff" />
+            <Text style={styles.statusText}>{alignment.status}</Text>
+          </Animated.View>
 
-        {/* Compass Container */}
-        <View style={styles.compassContainer}>
-          {/* Outer Compass Ring */}
-          <View style={styles.compassRing}>
-            {/* Degree Markings */}
-            {Array.from({ length: 36 }, (_, i) => (
-              <View
-                key={i}
+          {/* Compass Container */}
+          <View style={styles.compassContainer}>
+            {/* Outer Compass Ring */}
+            <View style={styles.compassRing}>
+              {/* Degree Markings */}
+              {Array.from({ length: 36 }, (_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.degreeMark,
+                    {
+                      transform: [
+                        { rotate: `${i * 10}deg` },
+                        { translateY: -COMPASS_SIZE / 2 + 10 }
+                      ]
+                    }
+                  ]}
+                >
+                  <View style={[
+                    styles.markLine,
+                    { 
+                      height: i % 9 === 0 ? 20 : 10, 
+                      backgroundColor: i % 9 === 0 ? '#fff' : '#ccc' 
+                    }
+                  ]} />
+                </View>
+              ))}
+              
+              {/* Cardinal Directions */}
+              <Animated.View 
                 style={[
-                  styles.degreeMark,
-                  {
+                  styles.compassDirections,
+                  { transform: [{ rotate: `${heading}deg` }] }
+                ]}
+              >
+                {/* North */}
+                <View style={[styles.directionMarker, styles.northMarker]}>
+                  <Text style={styles.directionText}>N</Text>
+                </View>
+                
+                {/* East */}
+                <View style={[styles.directionMarker, styles.eastMarker]}>
+                  <Text style={styles.directionText}>E</Text>
+                </View>
+                
+                {/* South */}
+                <View style={[styles.directionMarker, styles.southMarker]}>
+                  <Text style={styles.directionText}>S</Text>
+                </View>
+                
+                {/* West */}
+                <View style={[styles.directionMarker, styles.westMarker]}>
+                  <Text style={styles.directionText}>W</Text>
+                </View>
+              </Animated.View>
+
+              {/* Qibla Direction Indicator */}
+              <Animated.View 
+                style={[
+                  styles.qiblaIndicator,
+                  { 
                     transform: [
-                      { rotate: `${i * 10}deg` },
-                      { translateY: -COMPASS_SIZE / 2 + 10 }
-                    ]
+                      { rotate: `${qiblaDirection - heading}deg` },
+                      { scale: alignment.status.includes('Perfect') ? pulseAnimation : 1 }
+                    ] 
                   }
                 ]}
               >
-                <View style={[
-                  styles.markLine,
-                  { 
-                    height: i % 9 === 0 ? 20 : 10, 
-                    backgroundColor: i % 9 === 0 ? '#fff' : '#ccc' 
-                  }
-                ]} />
-              </View>
-            ))}
-            
-            {/* Cardinal Directions */}
-            <Animated.View 
-              style={[
-                styles.compassDirections,
-                { transform: [{ rotate: `${heading}deg` }] }
-              ]}
-            >
-              {/* North */}
-              <View style={[styles.directionMarker, styles.northMarker]}>
-                <Text style={styles.directionText}>N</Text>
-              </View>
-              
-              {/* East */}
-              <View style={[styles.directionMarker, styles.eastMarker]}>
-                <Text style={styles.directionText}>E</Text>
-              </View>
-              
-              {/* South */}
-              <View style={[styles.directionMarker, styles.southMarker]}>
-                <Text style={styles.directionText}>S</Text>
-              </View>
-              
-              {/* West */}
-              <View style={[styles.directionMarker, styles.westMarker]}>
-                <Text style={styles.directionText}>W</Text>
-              </View>
-            </Animated.View>
+                <LinearGradient
+                  colors={['#FFD700', '#FFA500', '#FF8C00']}
+                  style={styles.qiblaArrow}
+                >
+                  <Ionicons name="navigate" size={35} color="#fff" />
+                  <Text style={styles.qiblaText}>QIBLA</Text>
+                </LinearGradient>
+              </Animated.View>
 
-            {/* Qibla Direction Indicator */}
-            <Animated.View 
-              style={[
-                styles.qiblaIndicator,
-                { 
-                  transform: [
-                    { rotate: `${qiblaDirection - heading}deg` },
-                    { scale: alignment.status.includes('Perfect') ? pulseAnimation : 1 }
-                  ] 
-                }
-              ]}
-            >
-              <LinearGradient
-                colors={['#FFD700', '#FFA500', '#FF8C00']}
-                style={styles.qiblaArrow}
-              >
-                <Ionicons name="navigate" size={35} color="#fff" />
-                <Text style={styles.qiblaText}>QIBLA</Text>
-              </LinearGradient>
-            </Animated.View>
-
-            {/* Center Point */}
-            <View style={styles.centerDot}>
-              <Ionicons name="radio-button-on" size={15} color="#fff" />
+              {/* Center Point */}
+              <View style={styles.centerDot}>
+                <Ionicons name="radio-button-on" size={15} color="#fff" />
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Information Cards */}
-        <View style={styles.infoContainer}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoCard}>
-              <Ionicons name="compass-outline" size={24} color="#4a7c59" />
-              <Text style={styles.infoLabel}>Qibla Direction</Text>
-              <Text style={styles.infoValue}>{Math.round(qiblaDirection)}°</Text>
+          {/* Information Cards */}
+          <View style={styles.infoContainer}>
+            <View style={styles.infoRow}>
+              <View style={styles.infoCard}>
+                <Ionicons name="compass-outline" size={24} color="#4a7c59" />
+                <Text style={styles.infoLabel}>Qibla Direction</Text>
+                <Text style={styles.infoValue}>{Math.round(qiblaDirection)}°</Text>
+              </View>
+              
+              <View style={styles.infoCard}>
+                <Ionicons name="location-outline" size={24} color="#4a7c59" />
+                <Text style={styles.infoLabel}>Distance to Kaaba</Text>
+                <Text style={styles.infoValue}>{distance.toLocaleString()} km</Text>
+              </View>
             </View>
             
-            <View style={styles.infoCard}>
-              <Ionicons name="location-outline" size={24} color="#4a7c59" />
-              <Text style={styles.infoLabel}>Distance to Kaaba</Text>
-              <Text style={styles.infoValue}>{distance.toLocaleString()} km</Text>
-            </View>
+            {location && (
+              <View style={styles.locationCard}>
+                <Ionicons name="pin" size={18} color="#4a7c59" />
+                <Text style={styles.locationText}>
+                  Your Location: {location.coords.latitude.toFixed(4)}°, {location.coords.longitude.toFixed(4)}°
+                </Text>
+              </View>
+            )}
           </View>
-          
-          {location && (
-            <View style={styles.locationCard}>
-              <Ionicons name="pin" size={18} color="#4a7c59" />
-              <Text style={styles.locationText}>
-                Your Location: {location.coords.latitude.toFixed(4)}°, {location.coords.longitude.toFixed(4)}°
-              </Text>
-            </View>
-          )}
-        </View>
 
-        {/* Instructions */}
-        <View style={styles.instructionsCard}>
-          <Text style={styles.instructionsTitle}>📱 How to Use:</Text>
-          <Text style={styles.instructionsText}>
-            1. Hold your device horizontally and level{'\n'}
-            2. Rotate slowly until the golden arrow points upward{'\n'}
-            3. The direction the arrow points is your Qibla{'\n'}
-            4. Face that direction for prayer
-          </Text>
-        </View>
+          {/* Instructions */}
+          <View style={styles.instructionsCard}>
+            <Text style={styles.instructionsTitle}>📱 How to Use:</Text>
+            <Text style={styles.instructionsText}>
+              1. Hold your device horizontally and level{'\n'}
+              2. Rotate slowly until the golden arrow points upward{'\n'}
+              3. The direction the arrow points is your Qibla{'\n'}
+              4. Face that direction for prayer
+            </Text>
+          </View>
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.actionButton} onPress={getCurrentLocation}>
-            <Ionicons name="refresh" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Refresh Location</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.calibrateButton]}
-            onPress={() => {
-              Alert.alert(
-                'Compass Calibration', 
-                'For better accuracy:\n\n1. Move away from metal objects\n2. Hold device flat\n3. Rotate in figure-8 pattern\n4. Avoid magnetic interference',
-                [{ text: 'Got it!' }]
-              );
-            }}
-          >
-            <Ionicons name="settings" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Help</Text>
-          </TouchableOpacity>
-        </View>
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.actionButton} onPress={getCurrentLocation}>
+              <Ionicons name="refresh" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Refresh Location</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.calibrateButton]}
+              onPress={calibrateCompass}
+            >
+              <Ionicons name="settings" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Calibrate</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </Animated.View>
     </LinearGradient>
   );
 }
 
+// Your existing styles remain the same...
 const styles = StyleSheet.create({
+  // ... keep all your existing styles exactly as they are
   container: {
     flex: 1,
     paddingTop: StatusBar.currentHeight || 44,

@@ -1,6 +1,6 @@
 // src/screens/AudioScreen.js
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal } from 'react-native';
 import { Audio } from 'expo-av';
 import { useQuery } from '@tanstack/react-query';
 import { useSettings } from '../contexts/SettingsContext';
@@ -8,6 +8,7 @@ import { quranApi } from '../services/quranApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export default function AudioScreen() {
   const [sound, setSound] = useState(null);
@@ -17,46 +18,62 @@ export default function AudioScreen() {
   const [currentSurah, setCurrentSurah] = useState(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [soundStatus, setSoundStatus] = useState('unloaded');
+  const [showReciterModal, setShowReciterModal] = useState(false);
   
-  const { reciter } = useSettings();
+  const { reciter, saveReciter } = useSettings();
   
   // Available reciters with their audio support
-  const availableReciters = {
-    'ar.alafasy': {
-      name: 'Mishary Rashid Alafasy',
-      hasAudio: true,
-      baseUrl: 'https://server8.mp3quran.net/afs'
-    },
-    'ar.abdulbasit': {
-      name: 'Abdul Basit Abdul Samad',
-      hasAudio: true,
-      baseUrl: 'https://server7.mp3quran.net/basit'
-    },
-    'ar.husary': {
-      name: 'Mahmoud Khalil Al-Husary',
-      hasAudio: true,
-      baseUrl: 'https://server6.mp3quran.net/husary'
-    },
-    'ar.minshawi': {
-      name: 'Mohamed Siddiq El-Minshawi',
-      hasAudio: true,
-      baseUrl: 'https://server10.mp3quran.net/minsh'
-    },
-    'ar.sudais': {
-      name: 'Abdul Rahman Al-Sudais',
-      hasAudio: true,
-      baseUrl: 'https://server11.mp3quran.net/sds'
-    }
-  };
+  // const availableReciters = {
+  //   'ar.alafasy': {
+  //     name: 'Mishary Rashid Alafasy',
+  //     hasAudio: true,
+  //     baseUrl: 'https://server8.mp3quran.net/afs'
+  //   },
+
+  //   'ar.minshawi': {
+  //     name: 'Mohamed Siddiq El-Minshawi',
+  //     hasAudio: true,
+  //     baseUrl: 'https://server10.mp3quran.net/minsh'
+  //   },
+  //   'ar.sudais': {
+  //     name: 'Abdul Rahman Al-Sudais',
+  //     hasAudio: true,
+  //     baseUrl: 'https://server11.mp3quran.net/sds'
+  //   }
+  // };
 
   // Fixed query for reciters - return our available reciters
-  const { data: reciters, isLoading: isLoadingReciters } = useQuery({
+  const { data: recitersData, isLoading: isLoadingReciters } = useQuery({
     queryKey: ['reciters'],
-    queryFn: () => Promise.resolve(Object.entries(availableReciters).map(([key, value]) => ({
-      identifier: key,
-      englishName: value.name,
-      hasAudio: value.hasAudio
-    })))
+    queryFn: async () => {
+      try {
+        const response = await quranApi.getReciters();
+        return response.data || response; // Handle both response formats
+      } catch (error) {
+        console.error('Error fetching reciters:', error);
+        // Fallback to basic reciters if API fails
+        return [
+          {
+            identifier: 'ar.alafasy',
+            englishName: 'Mishary Rashid Alafasy',
+            name: 'مشاري بن راشد العفاسي',
+            hasAudio: true
+          },
+          {
+            identifier: 'ar.minshawi',
+            englishName: 'Mohamed Siddiq El-Minshawi',
+            name: 'محمد صديق المنشاوي',
+            hasAudio: true
+          },
+          {
+            identifier: 'ar.sudais',
+            englishName: 'Abdul Rahman Al-Sudais',
+            name: 'عبد الرحمن السديس',
+            hasAudio: true
+          }
+        ];
+      }
+    }
   });
 
   const { data: surahs, isLoading: isLoadingSurahs } = useQuery({
@@ -72,9 +89,24 @@ export default function AudioScreen() {
     }
   });
 
+    // Create availableReciters object from API data
+    const availableReciters = recitersData?.reduce((acc, reciter) => {
+      acc[reciter.identifier] = {
+        name: reciter.englishName,
+        hasAudio: reciter.hasAudio,
+        // Use the getAudioUrl function from quranApi
+        baseUrl: reciter.server || `https://server8.mp3quran.net/${reciter.identifier.split('.')[1]}`
+      };
+      return acc;
+    }, {}) || {};
+
   // Get current reciter info
   const currentReciter = availableReciters[reciter] || availableReciters['ar.alafasy'];
+  
+  // Filter supported reciters
+  const supportedReciters = recitersData?.filter(reciter => reciter.hasAudio) || [];
 
+ 
   // Clean up sound on unmount
   useEffect(() => {
     return () => {
@@ -87,37 +119,96 @@ export default function AudioScreen() {
     };
   }, [sound]);
 
+    // Handle reciter selection - same as SettingsScreen
+    const handleReciterSelect = (selectedReciter) => {
+      console.log('Selected reciter:', selectedReciter.identifier);
+      saveReciter(selectedReciter.identifier);
+      setShowReciterModal(false);
+      
+      // Stop current audio when changing reciter
+      if (sound) {
+        stopAudio();
+      }
+    };
+
   // Get audio URL - Fixed implementation
-  const getAudioUrl = (surahNumber) => {
-    try {
-      const reciterData = availableReciters[reciter];
-      if (!reciterData || !reciterData.hasAudio) {
+  // const getAudioUrl = (surahNumber) => {
+  //   try {
+  //     const reciterData = availableReciters[reciter];
+  //     if (!reciterData || !reciterData.hasAudio) {
+  //       return null;
+  //     }
+      
+  //     // Format surah number with leading zeros (e.g., 001, 002, 114)
+  //     const formattedNumber = surahNumber.toString().padStart(3, '0');
+      
+  //     // Different URL patterns for different reciters
+  //     switch (reciter) {
+  //       case 'ar.alafasy':
+  //         return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
+  //       case 'ar.abdulbasit':
+  //         return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
+  //       case 'ar.husary':
+  //         return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
+  //       case 'ar.minshawi':
+  //         return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
+  //       case 'ar.sudais':
+  //         return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
+  //       default:
+  //         return `${availableReciters['ar.alafasy'].baseUrl}/${formattedNumber}.mp3`;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error getting audio URL:', error);
+  //     return null;
+  //   }
+  // };
+
+    // Get audio URL using the Quran API function
+    const getAudioUrl = (surahNumber) => {
+      try {
+        // Use the quranApi function instead of hardcoded logic
+        return quranApi.getAudioUrl(surahNumber, reciter);
+      } catch (error) {
+        console.error('Error getting audio URL:', error);
         return null;
       }
-      
-      // Format surah number with leading zeros (e.g., 001, 002, 114)
-      const formattedNumber = surahNumber.toString().padStart(3, '0');
-      
-      // Different URL patterns for different reciters
-      switch (reciter) {
-        case 'ar.alafasy':
-          return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
-        case 'ar.abdulbasit':
-          return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
-        case 'ar.husary':
-          return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
-        case 'ar.minshawi':
-          return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
-        case 'ar.sudais':
-          return `${reciterData.baseUrl}/${formattedNumber}.mp3`;
-        default:
-          return `${availableReciters['ar.alafasy'].baseUrl}/${formattedNumber}.mp3`;
-      }
-    } catch (error) {
-      console.error('Error getting audio URL:', error);
-      return null;
-    }
-  };
+    };
+
+   // Render reciter item for modal - same as SettingsScreen
+     // Render reciter item for modal
+  const renderReciterItem = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.modalItem,
+        reciter === item.identifier && styles.selectedModalItem
+      ]}
+      onPress={() => handleReciterSelect(item)}
+    >
+      <View style={styles.modalItemContent}>
+        <Text style={[
+          styles.modalItemText,
+          reciter === item.identifier && styles.selectedModalItemText
+        ]}>
+          {item.englishName}
+        </Text>
+        <Text style={styles.modalItemSubtext}>
+          {item.identifier}
+        </Text>
+        <View style={styles.reciterStatusRow}>
+          <View style={[
+            styles.statusDot,
+            item.hasAudio ? styles.statusAvailable : styles.statusUnavailable
+          ]} />
+          <Text style={styles.reciterStatusText}>
+            {item.hasAudio ? 'Audio Supported' : 'No Audio'}
+          </Text>
+        </View>
+      </View>
+      {reciter === item.identifier && (
+        <Ionicons name="checkmark" size={20} color="#16a34a" />
+      )}
+    </TouchableOpacity>
+  );
 
   const playAudio = async (surah) => {
     try {
@@ -374,7 +465,9 @@ export default function AudioScreen() {
     <SafeAreaView style={styles.container}>
       {/* Audio Player Controls */}
       {currentSurah && (
-        <View style={styles.playerContainer}>
+        
+         <View style={styles.playerContainer}>
+         
           <Text style={styles.playerTitle}>Now Playing</Text>
           
           <View style={styles.surahInfoContainer}>
@@ -456,21 +549,65 @@ export default function AudioScreen() {
         </View>
       )}
 
-      {/* Reciter Info */}
-      <View style={styles.reciterContainer}>
-        <Text style={styles.reciterTitle}>Current Reciter</Text>
-        <Text style={styles.reciterName}>{getCurrentReciterName()}</Text>
+
+  {/* Reciter Selection */}
+  <View style={styles.reciterContainer}>
+    <TouchableOpacity 
+      style={styles.reciterButton}
+      onPress={() => setShowReciterModal(true)}
+    >
+      <View style={styles.reciterButtonContent}>
+        <Ionicons name="musical-notes" size={20} color="#16a34a" />
+        <View style={styles.reciterButtonText}>
+          <Text style={styles.reciterTitle}>Current Reciter</Text>
+          <Text style={styles.reciterName}>{getCurrentReciterName()}</Text>
+          <Text style={styles.reciterStatus}>
+            {isReciterSupported() ? '✅ Audio Supported' : '❌ No Audio Support'}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={16} color="#64748b" />
+      </View>
+    </TouchableOpacity>
+  </View>
+
+  <Modal
+    visible={showReciterModal}
+    transparent={true}
+    animationType="slide"
+    onRequestClose={() => setShowReciterModal(false)}
+  >
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Select Quran Reciter</Text>
+          <TouchableOpacity onPress={() => setShowReciterModal(false)}>
+            <Ionicons name="close" size={24} color="#64748b" />
+          </TouchableOpacity>
+        </View>
         
-        {!isReciterSupported() ? (
-          <Text style={styles.reciterError}>
-            This reciter does not support audio playback. Please change reciter in Settings.
-          </Text>
+        <Text style={styles.modalSubtitle}>
+          Supported reciters have audio available
+        </Text>
+        
+        {isLoadingReciters ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#16a34a" />
+            <Text style={styles.loadingText}>Loading reciters...</Text>
+          </View>
         ) : (
-          <Text style={styles.reciterHint}>
-            You can change the Reciter from settings.
-          </Text>
+          <FlatList
+            data={supportedReciters}
+            keyExtractor={item => item.identifier}
+            renderItem={renderReciterItem}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No supported reciters available</Text>
+            }
+          />
         )}
       </View>
+    </View>
+  </Modal>
+
 
       {/* Supported Reciters List */}
       {!isReciterSupported() && (
@@ -748,5 +885,118 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
     fontStyle: 'italic',
+  },
+  reciterContainer: {
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    margin: 16,
+    marginTop: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  reciterButton: {
+    // The entire area is clickable
+  },
+  reciterButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  reciterButtonText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  reciterTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  reciterName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+  reciterStatus: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+
+  // Modal Styles (same as SettingsScreen)
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#16a34a',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalItemContent: {
+    flex: 1,
+  },
+  selectedModalItem: {
+    backgroundColor: '#f0fdf4',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#374151',
+  },
+  modalItemSubtext: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  selectedModalItemText: {
+    color: '#16a34a',
+    fontWeight: '500',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#64748b',
+    padding: 20,
+    fontStyle: 'italic',
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    color: '#64748b',
   },
 });
