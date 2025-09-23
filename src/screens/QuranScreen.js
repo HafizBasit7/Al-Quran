@@ -7,6 +7,7 @@ import { quranApi } from '../services/quranApi';
 import SurahListItem from '../components/SurahListItem';
 import JuzListItem from '../components/JuzListItem';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Juz data with start and end surah/ayah information
 const JUZ_DATA = [
@@ -66,6 +67,11 @@ export default function QuranScreen() {
   }
 
   return (
+    <LinearGradient
+    colors={['#0d9488', '#059669', '#047857']}
+    locations={[0, 0.5, 1]}
+    style={styles.gradient}
+  >
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>The Holy Quran</Text>
@@ -105,11 +111,15 @@ export default function QuranScreen() {
         />
       )}
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  gradient: {
+    flex: 1,
+  },
+  container: { flex: 1, },
   centerContainer: { 
     flex: 1, 
     justifyContent: 'center', 

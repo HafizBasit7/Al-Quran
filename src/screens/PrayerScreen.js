@@ -8,6 +8,7 @@ import LocationSelector from '../components/LocationSelector';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '../components/BackButton';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PrayerScreen() {
   const [selectedCity, setSelectedCity] = useState(null);
@@ -56,6 +57,11 @@ export default function PrayerScreen() {
   }
 
   return (
+    <LinearGradient
+    colors={['#0d9488', '#059669', '#047857']}
+    locations={[0, 0.5, 1]}
+    style={styles.gradient}
+  >
     <SafeAreaView style={styles.container}>
     <ScrollView 
       
@@ -63,10 +69,10 @@ export default function PrayerScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <Text style={styles.title}>أوقات الصلاة</Text>
         <Text style={styles.subtitle}>Prayer Times</Text>
-      </View>
+      </View> */}
 
       <LocationSelector 
         selectedLocation={selectedCity ? { type: 'custom', city: selectedCity, country: selectedCountry } : { type: 'current' }}
@@ -106,13 +112,17 @@ export default function PrayerScreen() {
       )}
     </ScrollView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    // backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,

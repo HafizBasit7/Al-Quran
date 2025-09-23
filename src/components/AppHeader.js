@@ -182,10 +182,10 @@ export default function AppHeader({ title, showDrawer = true, prayerData }) {
           <Text style={styles.greeting}>{getGreeting()}</Text>
           <View style={styles.titleRow}>
             <View style={styles.islamicBorder} />
-            <Text style={styles.title}>{title || 'Easy Quran'}</Text>
+            <Text style={styles.title}>القرآن الكريم</Text>
             <View style={styles.islamicBorder} />
           </View>
-          <Text style={styles.subtitle}>القرآن الكريم</Text>
+          {/* <Text style={styles.subtitle}>القرآن الكريم</Text> */}
         </View>
 
         <View style={styles.iconContainer}>
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 34,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',

@@ -8,7 +8,7 @@ import { quranApi } from '../services/quranApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function AudioScreen() {
   const [sound, setSound] = useState(null);
@@ -462,6 +462,11 @@ export default function AudioScreen() {
   }
 
   return (
+    <LinearGradient
+    colors={['#0d9488', '#059669', '#047857']}
+    locations={[0, 0.5, 1]}
+    style={styles.gradient}
+  >
     <SafeAreaView style={styles.container}>
       {/* Audio Player Controls */}
       {currentSurah && (
@@ -641,13 +646,17 @@ export default function AudioScreen() {
         }
       />
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    // backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
@@ -821,7 +830,7 @@ const styles = StyleSheet.create({
   listHeader: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#16a34a',
+    color: '#fff',
     marginBottom: 16,
     textAlign: 'center',
   },

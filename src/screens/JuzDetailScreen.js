@@ -7,6 +7,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { quranApi } from '../services/quranApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 const VERSES_PER_PAGE = 15;
@@ -197,6 +198,11 @@ export default function JuzDetailScreen({ route, navigation }) {
   
 
   return (
+    <LinearGradient
+    colors={['#0d9488', '#059669', '#047857']}
+    locations={[0, 0.5, 1]}
+    style={styles.gradient}
+  >
     <SafeAreaView style={styles.container}>
       {/* Juz Page Content */}
       <ScrollView 
@@ -376,13 +382,17 @@ export default function JuzDetailScreen({ route, navigation }) {
         </View>
       </Modal>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8f6f0',
+    // backgroundColor: '#f8f6f0',
   },
   scrollView: {
     flex: 1,
@@ -434,7 +444,7 @@ const styles = StyleSheet.create({
   },
   juzInfo: {
     fontSize: 14,
-    color: '#666',
+    color: '#fff',
     fontStyle: 'italic',
     textAlign: 'center',
   },
