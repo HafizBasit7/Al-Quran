@@ -8,10 +8,11 @@ import { LinearGradient } from "expo-linear-gradient";
 const { width } = Dimensions.get("window");
 
 const items = [
+  { key: "Read Quran", screen: "DuasScreen", icon: "book-outline" },
   { key: "Qibla", screen: "QiblaScreen", icon: "compass-outline" },
   { key: "Tasbih", screen: "TasbihScreen", icon: "ellipse-outline" },
-  { key: "Read Quran", screen: "DuasScreen", icon: "book-outline" },
-  { key: "Duas", screen: "HadithScreen", icon: "document-text-outline" },
+  { key: "Mosque Nearby", screen: "HadithScreen", icon: "location-outline" },
+  // { key: "Zakat Calculator", screen: "Zakat Calculator", icon: "location-outline" },
 ];
 
 const QuickAccess = () => {

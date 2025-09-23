@@ -13,6 +13,7 @@ export default function RootNavigator() {
       {/* If you have authentication, you can conditionally render screens here */}
       <Stack.Screen name="Main" component={MainTabNavigator} />
       
+      
       {/* Add other root-level screens that shouldn't be in tabs */}
       {/* <Stack.Screen name="Login" component={LoginScreen} /> */}
     </Stack.Navigator>

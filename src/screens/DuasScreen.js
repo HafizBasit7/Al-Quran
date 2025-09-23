@@ -42,7 +42,7 @@ const QuranReader = () => {
   const scrollY = useRef(0);
   const scrollOffset = useRef(new Animated.Value(0)).current;
 
-  // Surah names (first 30 surahs for demo)
+  // Surah names 
   const surahNames = [
     { id: 1, name: 'الفاتحة', englishName: 'Al-Fatihah', verses: 7 },
     { id: 2, name: 'البقرة', englishName: 'Al-Baqarah', verses: 286 },
@@ -230,7 +230,7 @@ const QuranReader = () => {
     
     scrollInterval.current = setInterval(() => {
       if (scrollViewRef.current) {
-        scrollY.current += 1;
+        scrollY.current += 2;
         
         scrollViewRef.current.scrollTo({
           y: scrollY.current,

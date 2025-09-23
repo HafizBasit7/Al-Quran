@@ -6,6 +6,7 @@ import QiblaScreen from '../../screens/QiblaScreen';
 import TasbihScreen from '../../screens/TasbihScreen';
 import DuasScreen from '../../screens/DuasScreen';
 import HadithScreen from '../../screens/HadithScreen';
+import ZakatCalculator from '../../screens/ZakatCalculator';
 
 const Stack = createStackNavigator();
 
@@ -40,8 +41,14 @@ export default function HomeStack() {
       <Stack.Screen 
         name="HadithScreen" 
         component={HadithScreen} 
-        options={{ title: 'Hadith' }}
+        options={{ title: 'Mosque Finder' }}
       />
+       <Stack.Screen 
+        name="Zakat Calculator" 
+        component={ZakatCalculator} 
+        options={{ title: 'Calculator', headerShown: false }}
+      />
+    
     </Stack.Navigator>
   );
 }

@@ -10,6 +10,7 @@ import QuickBookmarks from '../components/QuickBookmarks';
 import HeaderCard from '../components/HeaderCard';
 import QuickAccess from '../components/QuickAccess';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AppHeader from '../components/AppHeader';
 
 export default function HomeScreen() {
   const { bookmarks } = useSettings();
@@ -58,6 +59,7 @@ const { data: dailyAyah } = useQuery({
   });
   return (
     <SafeAreaView style={styles.container}>
+      <AppHeader title="Al-Quran" prayerData={prayerData} />
     <ScrollView >
      <HeaderCard prayerData={prayerData} />
 
