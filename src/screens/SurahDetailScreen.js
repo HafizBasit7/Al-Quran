@@ -200,6 +200,9 @@ export default function SurahDetailScreen({ route, navigation }) {
         onContentSizeChange={handleContentSizeChange}
         showsVerticalScrollIndicator={false}
       >
+         <View style={styles.back}>
+              <BackButton />
+            </View>
         {/* Page Header */}
         {surah && (
           <View style={styles.pageHeader}>
@@ -220,6 +223,7 @@ export default function SurahDetailScreen({ route, navigation }) {
               highlightAyah === ayah.numberInSurah && styles.highlightedVerse
             ]}
           >
+           
             <View style={styles.verseHeader}>
               <View style={styles.verseNumberContainer}>
                 <Text style={styles.verseNumber}>{ayah.numberInSurah}</Text>
@@ -407,8 +411,8 @@ const styles = StyleSheet.create({
   },
   pageHeader: {
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 20,
+    marginBottom: 10,
+    padding: 5,
     backgroundColor: 'rgba(22, 163, 74, 0.08)',
     borderRadius: 12,
     borderWidth: 1,
@@ -457,6 +461,10 @@ const styles = StyleSheet.create({
     shadowColor: '#16a34a',
     shadowOpacity: 0.1,
     shadowRadius: 6,
+  },
+  back: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   verseHeader: {
     flexDirection: 'row',

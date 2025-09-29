@@ -45,7 +45,7 @@ export default function SettingsScreen() {
   };
 
   const handleReciterSelect = (selectedReciter) => {
-    console.log('Selected reciter:', selectedReciter.identifier);
+    // console.log('Selected reciter:', selectedReciter.identifier);
     saveReciter(selectedReciter.identifier);
     setShowReciterModal(false);
   };

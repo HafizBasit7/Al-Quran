@@ -342,7 +342,7 @@ const QuranReader = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#15803d" />
+      {/* <StatusBar barStyle="light-content" backgroundColor="#15803d" /> */}
       
       {/* Header */}
       <View style={styles.header}>

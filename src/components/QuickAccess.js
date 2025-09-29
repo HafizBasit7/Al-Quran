@@ -8,12 +8,18 @@ import { LinearGradient } from "expo-linear-gradient";
 const { width } = Dimensions.get("window");
 
 const items = [
-  { key: "Read Quran", screen: "DuasScreen", icon: "book-outline" },
+  // { key: "Read Quran", screen: "DuasScreen", icon: "book-outline" },
+  { key: "Read Quran", screen: "QuranNavigation", icon: "book-outline" },
   { key: "Qibla", screen: "QiblaScreen", icon: "compass-outline" },
-  { key: "Tasbih", screen: "TasbihScreen", icon: "ellipse-outline" },
+  { key: "Tasbih", screen: "TasbihScreen", icon: "infinite-outline" },
   { key: "Mosque Nearby", screen: "HadithScreen", icon: "location-outline" },
-  // { key: "Zakat Calculator", screen: "Zakat Calculator", icon: "location-outline" },
+  { key: "Zakat Calculator", screen: "Zakat Calculator", icon: "calculator" },
+  { key: "Islamic Events", screen: "Events", icon: "calendar" },
+  { key: "Hajj/Umrah Guide", screen: "HajjUmrahGuide", icon: "business-outline" },
+  // { key: "Quran PDF", screen: "QuranPdf", icon: "book-outline" },
+  
 ];
+
 
 const QuickAccess = () => {
   const navigation = useNavigation();

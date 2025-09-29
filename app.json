@@ -35,6 +35,18 @@
       "eas": {
         "projectId": "2c80c12b-a88b-4966-8c77-69adef2c54d0"
       }
-    }
+    },
+    "packagerOpts": {
+      "config": "metro.config.js",
+      "sourceExts": ["js", "jsx", "ts", "tsx", "pdf"]
+    },
+    "plugins": [
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ]
+    ]
   }
 }

@@ -38,8 +38,8 @@ export default function Navigation() {
     <>
       <StatusBar 
         barStyle="light-content" // Always light content for green background
-        // backgroundColor="#16a34a" // Always green as requested
-        backgroundColor="#1e1e1e"
+        // backgroundColor="#059669" // Always green as requested
+        // backgroundColor="#1e1e1e"
         translucent={false}
       />
       <NavigationContainer theme={navTheme}>

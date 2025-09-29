@@ -7,7 +7,6 @@ import PrayerCountdown from '../components/PrayerCountdown';
 import LocationSelector from '../components/LocationSelector';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BackButton from '../components/BackButton';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PrayerScreen() {

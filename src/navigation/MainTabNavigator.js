@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +17,24 @@ const Tab = createBottomTabNavigator();
 export default function MainTabNavigator() {
   const { colors } = useTheme(); // Get colors from the current theme
   const insets = useSafeAreaInsets();
+
+  // Function to get tab bar visibility based on route
+  const getTabBarVisibility = (route) => {
+    const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+    
+    // Hide tab bar on these Quran screens
+    const hideTabBarScreens = [
+      'QuranPdf',
+      'QuranNavigation', 
+      'SurahReader',
+      'HadithScreen',
+      'QiblaScreen',
+      "TasbihScreen" ,
+      'HajjUmrahGuide',
+    ];
+    
+    return !hideTabBarScreens.includes(routeName);
+  };
 
   return (
     <Tab.Navigator
@@ -53,27 +72,82 @@ export default function MainTabNavigator() {
       <Tab.Screen 
         name="HomeTab" 
         component={HomeStack} 
-        options={{ title: 'Home' }}
+        options={({ route }) => ({
+          title: 'Home',
+          tabBarStyle: {
+            display: getTabBarVisibility(route) ? 'flex' : 'none',
+            backgroundColor: colors.card,
+            borderTopWidth: 0,
+            elevation: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: 5 + insets.bottom,
+            paddingTop: 5,
+          },
+        })}
       />
       <Tab.Screen 
         name="PrayerTab" 
         component={PrayerStack} 
-        options={{ title: 'Prayer' }}
+        options={({ route }) => ({
+          title: 'Prayer',
+          tabBarStyle: {
+            display: getTabBarVisibility(route) ? 'flex' : 'none',
+            backgroundColor: colors.card,
+            borderTopWidth: 0,
+            elevation: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: 5 + insets.bottom,
+            paddingTop: 5,
+          },
+        })}
       />
       <Tab.Screen 
         name="QuranTab" 
         component={QuranStack} 
-        options={{ title: 'Quran' }}
+        options={({ route }) => ({
+          title: 'Quran',
+          tabBarStyle: {
+            display: getTabBarVisibility(route) ? 'flex' : 'none',
+            backgroundColor: colors.card,
+            borderTopWidth: 0,
+            elevation: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: 5 + insets.bottom,
+            paddingTop: 5,
+          },
+        })}
       />
       <Tab.Screen 
         name="AudioTab" 
         component={AudioStack} 
-        options={{ title: 'Audio' }}
+        options={({ route }) => ({
+          title: 'Audio',
+          tabBarStyle: {
+            display: getTabBarVisibility(route) ? 'flex' : 'none',
+            backgroundColor: colors.card,
+            borderTopWidth: 0,
+            elevation: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: 5 + insets.bottom,
+            paddingTop: 5,
+          },
+        })}
       />
       <Tab.Screen 
         name="SettingsTab" 
         component={SettingsStack} 
-        options={{ title: 'Settings' }}
+        options={({ route }) => ({
+          title: 'Settings',
+          tabBarStyle: {
+            display: getTabBarVisibility(route) ? 'flex' : 'none',
+            backgroundColor: colors.card,
+            borderTopWidth: 0,
+            elevation: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: 5 + insets.bottom,
+            paddingTop: 5,
+          },
+        })}
       />
     </Tab.Navigator>
   );

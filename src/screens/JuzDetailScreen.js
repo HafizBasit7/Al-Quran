@@ -8,12 +8,13 @@ import { quranApi } from '../services/quranApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import BackButton from '../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 const VERSES_PER_PAGE = 15;
 
 export default function JuzDetailScreen({ route, navigation }) {
-  const { juzNumber, juzName, startSurah, startAyah, endSurah, endAyah } = route.params;
+  const { juzNumber, juzName, startSurah, startAyah, endSurah, endAyah, } = route.params;
   const [showTranslation, setShowTranslation] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [showControls, setShowControls] = useState(true);
@@ -215,6 +216,9 @@ export default function JuzDetailScreen({ route, navigation }) {
         showsVerticalScrollIndicator={false}
       >
         {/* Juz Header */}
+        <View style={styles.back}>
+          <BackButton />
+          </View>
         <View style={styles.pageHeader}>
           <Text style={styles.juzNumber}>Juz {juzNumber}</Text>
           {/* <Text style={styles.juzNameArabic}>{juzName}</Text> */}
@@ -222,6 +226,12 @@ export default function JuzDetailScreen({ route, navigation }) {
             Page {currentPage + 1} of {totalPages}
           </Text>
         </View>
+
+        <View style={styles.bismillahContainer}>
+                <Text style={styles.bismillahText}>
+                  بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                </Text>
+              </View>
 
         
 
@@ -420,10 +430,14 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textAlign: 'center',
   },
+  back: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   pageHeader: {
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 20,
+    marginBottom: 10,
+    padding: 5,
     backgroundColor: 'rgba(22, 163, 74, 0.08)',
     borderRadius: 12,
     borderWidth: 1,
@@ -447,6 +461,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+
+  bismillahContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#bbf7d0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  bismillahText: {
+    fontSize: 24,
+    color: '#15803d',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: 'ScheherazadeNew-Regular',
   },
   verseContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',

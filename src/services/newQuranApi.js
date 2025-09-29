@@ -19,7 +19,7 @@ const QuranAPI = {
         }
         
         const data = await response.json();
-        console.log(`✅ Loaded Surah ${surahNumber}`);
+        // console.log(`✅ Loaded Surah ${surahNumber}`);
         
         if (data.code === 200 && data.data) {
           // Concatenate all verses from this surah

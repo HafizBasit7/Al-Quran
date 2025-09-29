@@ -128,7 +128,7 @@ export default function QiblaScreen() {
         maximumAge: 10000,
       });
       
-      console.log('Location obtained:', locationResult);
+      // console.log('Location obtained:', locationResult);
       
       setLocation(locationResult);
       const calculatedDirection = calculateQiblaDirection(
@@ -151,7 +151,7 @@ export default function QiblaScreen() {
           distanceInterval: 10,
         },
         (newLocation) => {
-          console.log('Location updated:', newLocation);
+          // console.log('Location updated:', newLocation);
           setLocation(newLocation);
           const newQiblaDirection = calculateQiblaDirection(
             newLocation.coords.latitude, 
@@ -295,7 +295,7 @@ export default function QiblaScreen() {
       
       setQiblaDirection(bearing);
       
-      console.log('Qibla direction calculated:', bearing);
+      // console.log('Qibla direction calculated:', bearing);
       return bearing;
       
     } catch (error) {
@@ -357,7 +357,7 @@ export default function QiblaScreen() {
   if (loading) {
     return (
       <LinearGradient colors={['#1a472a', '#2d5a3d', '#4a7c59']} style={styles.container}>
-        <StatusBar barStyle="light-content" />
+        {/* <StatusBar barStyle="light-content" /> */}
         <Animated.View style={[styles.loadingContainer, { transform: [{ scale: scaleAnimation }] }]}>
           <Animated.View style={[styles.loadingIcon, { transform: [{ scale: pulseAnimation }] }]}>
             <Ionicons name="location" size={80} color="#fff" />
@@ -391,7 +391,7 @@ export default function QiblaScreen() {
   if (!locationPermission) {
     return (
       <LinearGradient colors={['#1a472a', '#2d5a3d', '#4a7c59']} style={styles.container}>
-        <StatusBar barStyle="light-content" />
+        {/* <StatusBar barStyle="light-content" /> */}
         <Animated.View style={[styles.errorContainer, { transform: [{ scale: scaleAnimation }] }]}>
           <Ionicons name="location-outline" size={100} color="#fff" />
           <Text style={styles.errorTitle}>Location Permission Required</Text>
@@ -409,7 +409,7 @@ export default function QiblaScreen() {
 
   return (
     <LinearGradient colors={['#1a472a', '#2d5a3d', '#4a7c59']} style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      {/* <StatusBar barStyle="light-content" /> */}
       
       <Animated.View style={[styles.content, { transform: [{ scale: scaleAnimation }] }]}>
         <ScrollView>
