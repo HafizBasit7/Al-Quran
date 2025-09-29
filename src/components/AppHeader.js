@@ -133,12 +133,12 @@ export default function AppHeader({ title, showDrawer = true, prayerData }) {
 
   const handleKabaPress = () => {
     // Navigate to Qibla direction or Mecca info
-    console.log('Khana Kaba pressed');
+    // console.log('Khana Kaba pressed');
   };
 
   const handleMasjidPress = () => {
     // Navigate to Prayer times or Masjid finder
-    console.log('Masjid Nabwi pressed');
+    // console.log('Masjid Nabwi pressed');
   };
 
   return (

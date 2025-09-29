@@ -189,7 +189,7 @@ export const SettingsProvider = ({ children }) => {
   const loadSettings = async () => {
     try {
       setIsLoading(true);
-      console.log('Loading settings from storage...');
+      // console.log('Loading settings from storage...');
 
       const [
         savedTheme,
@@ -248,7 +248,7 @@ export const SettingsProvider = ({ children }) => {
         }
       }
       
-      console.log('Settings loaded successfully');
+      // console.log('Settings loaded successfully');
     } catch (error) {
       console.error('Error loading settings:', error);
       // Set defaults on error
